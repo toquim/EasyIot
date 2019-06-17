@@ -1,6 +1,9 @@
 AsyncEventSource events("/events");
 
-JsonObject &configJson = getJsonObject();
+struct Config {
+  char hostname[64];
+  int port;
+};
 
 
 void logger(String payload)
@@ -22,7 +25,7 @@ String getUpdateUrl()
 }
 String getHostname()
 {
-  String nodeId = configJson.get<String>("nodeId");
+  String nodeId = configJson.getMember("nodeId").as<String>();
   if (nodeId.equals(DEFAULT_NODE_ID))
   {
     return DEFAULT_NODE_ID;
@@ -58,7 +61,7 @@ String normalize(String inputStr)
 }
 String getApName()
 {
-  String nodeId = configJson.get<String>("nodeId");
+  String nodeId = configJson.getMember("nodeId").as<String>();
   if (nodeId.equals(DEFAULT_NODE_ID))
   {
     return DEFAULT_NODE_ID;
@@ -77,39 +80,43 @@ void loadStoredConfiguration()
       cFile = SPIFFS.open(CONFIG_FILENAME, "r+");
       if (cFile)
       {
+        const size_t capacity = JSON_OBJECT_SIZE(16) + 380;
+        DynamicJsonDocument doc(capacity);
         logger("[CONFIG] Read stored file config...");
-        JsonObject &storedConfig = getJsonObject(cFile);
-        if (storedConfig.success())
-        {
+         DeserializationError error = deserializeJson(doc, file);
+         
+      if (!error) {
+        Serial.print(F("deserializeJson() failed with code "));
+      Serial.println(error.c_str());
           configJson.set("firmware", FIRMWARE_VERSION);
-          configJson.set("nodeId", storedConfig.get<String>("nodeId"));
-          configJson.set("hostname", storedConfig.get<String>("hostname"));
+          configJson.set("nodeId", storedConfig.getMember.as<String>()("nodeId"));
+          configJson.set("hostname", storedConfig.getMember.as<String>()("hostname"));
           configJson.set("hardware", HARDWARE);
           configJson.set("hardwareId", String(ESP.getChipId()));
           configJson.set("type", String(FACTORY_TYPE));
 
-          configJson.set("homeAssistantAutoDiscoveryPrefix", storedConfig.get<String>("homeAssistantAutoDiscoveryPrefix"));
+          configJson.set("homeAssistantAutoDiscoveryPrefix", storedConfig.getMember.as<String>()("homeAssistantAutoDiscoveryPrefix"));
 
-          configJson.set("mqttIpDns", storedConfig.get<String>("mqttIpDns"));
-          configJson.set("mqttUsername", storedConfig.get<String>("mqttUsername"));
-          configJson.set("mqttPort", storedConfig.get<unsigned int>("mqttPort"));
-          configJson.set("mqttPassword", storedConfig.get<String>("mqttPassword"));
+          configJson.set("mqttIpDns", storedConfig.getMember.as<String>()("mqttIpDns"));
+          configJson.set("mqttUsername", storedConfig.getMember.as<String>()("mqttUsername"));
+          configJson.set("mqttPort", storedConfig.getMember.as<unsigned int>("mqttPort"));
+          configJson.set("mqttPassword", storedConfig.getMember.as<String>()("mqttPassword"));
 
-          configJson.set("wifiSSID", storedConfig.get<String>("wifiSSID"));
-          configJson.set("wifiSecret", storedConfig.get<String>("wifiSecret"));
+          configJson.set("wifiSSID", storedConfig.getMember.as<String>()("wifiSSID"));
+          configJson.set("wifiSecret", storedConfig.getMember.as<String>()("wifiSecret"));
 
-          configJson.set("wifiSSID2", storedConfig.get<String>("wifiSSID2"));
-          configJson.set("wifiSecret2", storedConfig.get<String>("wifiSecret2"));
+          configJson.set("wifiSSID2", storedConfig.getMember.as<String>()("wifiSSID2"));
+          configJson.set("wifiSecret2", storedConfig.getMember.as<String>()("wifiSecret2"));
 
-          configJson.set("staticIp", storedConfig.get<bool>("staticIp"));
-          configJson.set("wifiIp", storedConfig.get<String>("wifiIp"));
-          configJson.set("wifiMask", storedConfig.get<String>("wifiMask"));
-          configJson.set("wifiGw", storedConfig.get<String>("wifiGw"));
+          configJson.set("staticIp", storedConfig.getMember.as<bool>("staticIp"));
+          configJson.set("wifiIp", storedConfig.getMember.as<String>()("wifiIp"));
+          configJson.set("wifiMask", storedConfig.getMember.as<String>()("wifiMask"));
+          configJson.set("wifiGw", storedConfig.getMember.as<String>()("wifiGw"));
 
-          configJson.set("apSecret", storedConfig.get<String>("apSecret"));
+          configJson.set("apSecret", storedConfig.getMember.as<String>()("apSecret"));
 
-          configJson.set("configTime", storedConfig.get<long>("configTime"));
-          configJson.set("configkey", storedConfig.get<String>("configkey"));
+          configJson.set("configTime", storedConfig.getMember.as<long>("configTime"));
+          configJson.set("configkey", storedConfig.getMember.as<String>()("configkey"));
           logger("[CONFIG] Apply stored file config with success...");
           cFile.close();
           configFail = false;
@@ -144,8 +151,8 @@ void loadStoredConfiguration()
 
 JsonObject &saveNode(JsonObject &nodeConfig)
 {
-  String nodeId = normalize(nodeConfig.get<String>("nodeId"));
-  configJson.set("nodeIdOld", configJson.get<String>("nodeId"));
+  String nodeId = normalize(nodeConfig.getMember("nodeId").as<String>());
+  configJson.set("nodeIdOld", configJson.getMember>("nodeId").as<String);
   configJson.set("nodeId", nodeId);
   requestConfigStorage();
   return configJson;
@@ -153,14 +160,14 @@ JsonObject &saveNode(JsonObject &nodeConfig)
 
 JsonObject &saveWifi(JsonObject &_config)
 {
-  configJson.set("wifiSSID", _config.get<String>("wifiSSID"));
-  configJson.set("wifiSecret", _config.get<String>("wifiSecret"));
-  configJson.set("wifiSSID2", _config.get<String>("wifiSSID2"));
-  configJson.set("wifiSecret2", _config.get<String>("wifiSecret2"));
-  configJson.set("wifiIp", _config.get<String>("wifiIp"));
-  configJson.set("wifiMask", _config.get<String>("wifiMask"));
-  configJson.set("wifiGw", _config.get<String>("wifiGw"));
-  configJson.set("staticIp", _config.get<bool>("staticIp"));
+  configJson.set("wifiSSID", _config.getMember("wifiSSID").as<String>());
+  configJson.set("wifiSecret", _config.getMember("wifiSecret").as<String>());
+  configJson.set("wifiSSID2", _config.getMember("wifiSSID2").as<String>());
+  configJson.set("wifiSecret2", _config.getMember("wifiSecret2").as<String>());
+  configJson.set("wifiIp", _config.getMember("wifiIp").as<String>());
+  configJson.set("wifiMask", _config.getMember("wifiMask").as<String>());
+  configJson.set("wifiGw", _config.getMember("wifiGw").as<String>());
+  configJson.set("staticIp", _config.getMember("staticIp").as<bool>);
   requestConfigStorage();
   reloadWiFiConfig();
   return configJson;
@@ -168,20 +175,20 @@ JsonObject &saveWifi(JsonObject &_config)
 
 JsonObject &adoptControllerConfig(JsonObject &_config, String configkey)
 {
-  configJson.set("wifiSSID", _config.get<String>("wifiSSID"));
-  configJson.set("wifiSecret", _config.get<String>("wifiSecret"));
+  configJson.set("wifiSSID", _config.getMember("wifiSSID").as<String>());
+  configJson.set("wifiSecret", _config.getMember("wifiSecret").as<String>());
 
-  configJson.set("wifiSSID2", _config.get<String>("wifiSSID2"));
-  configJson.set("wifiSecret2", _config.get<String>("wifiSecret2"));
+  configJson.set("wifiSSID2", _config.getMember("wifiSSID2".as<String>()));
+  configJson.set("wifiSecret2", _config.getMember("wifiSecret2").as<String>());
 
-  configJson.set("mqttIpDns", _config.get<String>("mqttIpDns"));
-  configJson.set("mqttUsername", _config.get<String>("mqttUsername"));
-  configJson.set("mqttPassword", _config.get<String>("mqttPassword"));
+  configJson.set("mqttIpDns", _config.getMember("mqttIpDns").as<String>());
+  configJson.set("mqttUsername", _config.getMember("mqttUsername").as<String>());
+  configJson.set("mqttPassword", _config.getMember("mqttPassword").as<String>());
 
-  configJson.set("configTime", _config.get<long>("configTime"));
+  configJson.set("configTime", _config.getMember("configTime").as<long>);
   configJson.set("configkey", configkey);
 
-  configJson.set("homeAssistantAutoDiscoveryPrefix", _config.get<String>("homeAssistantAutoDiscoveryPrefix"));
+  configJson.set("homeAssistantAutoDiscoveryPrefix", _config.getMember("homeAssistantAutoDiscoveryPrefix").as<String>());
 
   requestConfigStorage();
   return configJson;
@@ -189,7 +196,7 @@ JsonObject &adoptControllerConfig(JsonObject &_config, String configkey)
 
 void updateNetworkConfig()
 {
-  if (!configJson.get<bool>("staticIp"))
+  if (!configJson.getMember("staticIp").as<bool>)
   {
     configJson.set("wifiIp", WiFi.localIP().toString());
     configJson.set("wifiMask", WiFi.subnetMask().toString());
@@ -199,10 +206,10 @@ void updateNetworkConfig()
 
 JsonObject &saveMqtt(JsonObject &_config)
 {
-  configJson.set("mqttIpDns", _config.get<String>("mqttIpDns"));
-  configJson.set("mqttUsername", _config.get<String>("mqttUsername"));
-  configJson.set("mqttPassword", _config.get<String>("mqttPassword"));
-  configJson.set("mqttEmbedded", _config.get<String>("mqttEmbedded"));
+  configJson.set("mqttIpDns", _config.getMember("mqttIpDns").as<String>());
+  configJson.set("mqttUsername", _config.getMember("mqttUsername").as<String>());
+  configJson.set("mqttPassword", _config.getMember("mqttPassword").as<String>());
+  configJson.set("mqttEmbedded", _config.getMember("mqttEmbedded").as<String>());
   requestConfigStorage();
   return configJson;
 }
@@ -233,14 +240,14 @@ void persistConfigFile()
   JsonArray &switches = getStoredSwitchs();
   for (int i = 0; i < switches.size(); i++)
   {
-    JsonObject &switchJson = switches.get<JsonVariant>(i);
+    JsonObject &switchJson = switches.getMember.as<JsonVariant>(i);
     rebuildSwitchMqttTopics(switchJson);
     rebuildDiscoverySwitchMqttTopics(switchJson);
   }
   JsonArray &sensors = getStoredSensors();
   for (int i = 0; i < sensors.size(); i++)
   {
-    JsonObject &sensorJson = sensors.get<JsonVariant>(i);
+    JsonObject &sensorJson = sensors.getMember.as<JsonVariant>(i);
     rebuildSensorMqttTopics(sensorJson);
     rebuildDiscoverySensorMqttTopics(sensorJson);
   }

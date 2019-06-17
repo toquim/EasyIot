@@ -11,12 +11,12 @@ void setupWebserver()
 {
   MDNS.begin(getHostname().c_str());
   MDNS.addService("bhsystems", "tcp", 80);
-  MDNS.addServiceTxt("bhsystems", "tcp", "nodeId", getConfigJson().get<String>("nodeId"));
+  MDNS.addServiceTxt("bhsystems", "tcp", "nodeId", getConfigJson().getMember("nodeId").as<String>());
   MDNS.addServiceTxt("bhsystems", "tcp", "hardwareId", String(ESP.getChipId()));
   MDNS.addServiceTxt("bhsystems", "tcp", "type", String(FACTORY_TYPE));
   MDNS.addServiceTxt("bhsystems", "tcp", "wifiSignal", String(WiFi.RSSI()));
   MDNS.addServiceTxt("bhsystems", "tcp", "ssid", getApName());
-  MDNS.addServiceTxt("bhsystems", "tcp", "firmware", getConfigJson().get<String>("firmware"));
+  MDNS.addServiceTxt("bhsystems", "tcp", "firmware", getConfigJson().getMember("firmware").as<String>());
   server.addHandler(&events);
   /** HTML  **/
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -59,7 +59,7 @@ void setupWebserver()
       for (int i = 0; i < _devices.size(); i++)
       {
         JsonObject &switchJson = _devices[i];
-        if (switchJson.get<String>("id").equals(request->arg("id")))
+        if (switchJson.getMember("id").as<String>().equals(request->arg("id")))
         {
           stateSwitch(switchJson, request->arg("state"));
           break;
@@ -170,9 +170,7 @@ void setupWebserver()
     request->redirect("/");
   });
 
-  server.on("/gpios", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200);
-  });
+
   server.on("/loaddefaults", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200);
    requestLoadDefaults();
@@ -183,54 +181,33 @@ void setupWebserver()
   });
 
   AsyncCallbackJsonWebHandler *handlerSwitch = new AsyncCallbackJsonWebHandler("/save-switch", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    JsonObject& jsonObj = json.as<JsonObject>();
-    if (jsonObj.success())
-    {
-
+   
       AsyncResponseStream *response = request->beginResponseStream("application/json");
-      storeSwitch(jsonObj).printTo(*response);
+      storeSwitch(json.as<JsonObject>()).printTo(*response);
       request->send(response);
-    }
-    else
-    {
-      logger("[WEBSERVER] Json Error");
-      request->send(400, "text/plain", "JSON INVALID");
-    }
+   
   });
   server.addHandler(handlerSwitch);
 
   AsyncCallbackJsonWebHandler *handlerNode = new AsyncCallbackJsonWebHandler("/save-node", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    JsonObject &jsonObj = json.as<JsonObject>();
-    if (jsonObj.success())
-    {
+  
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       //SAVE CONFIG
-      saveNode(jsonObj).printTo(*response);
+      saveNode(json.as<JsonObject>()).printTo(*response);
       request->send(response);
-    }
-    else
-    {
-      logger("[WEBSERVER] Json Error");
-      request->send(400, "text/plain", "JSON INVALID");
-    }
+    
   });
   server.addHandler(handlerNode);
 
   AsyncCallbackJsonWebHandler *handlerWifi = new AsyncCallbackJsonWebHandler("/save-wifi", [](AsyncWebServerRequest *request, JsonVariant &json) {
     JsonObject &jsonObj = json.as<JsonObject>();
-    if (jsonObj.success())
-    {
+
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       //SAVE CONFIG
-      saveWifi(jsonObj).printTo(*response);
+      saveWifi(json.as<JsonObject>()).printTo(*response);
 
       request->send(response);
-    }
-    else
-    {
-      logger("[WEBSERVER] Json Error");
-      request->send(400, "text/plain", "JSON INVALID");
-    }
+    
   });
   server.addHandler(handlerWifi);
 
@@ -241,20 +218,10 @@ void setupWebserver()
       AsyncWebHeader *h = request->getHeader("configkey");
       Serial.printf("configkey: %s\n", h->value().c_str());
       String configkey = String(h->value().c_str());
-
-      JsonObject &jsonObj = json.as<JsonObject>();
-      if (jsonObj.success())
-      {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         //SAVE CONFIG
-        adoptControllerConfig(jsonObj, configkey).printTo(*response);
+        adoptControllerConfig(json.as<JsonObject>(), configkey).printTo(*response);
         request->send(response);
-      }
-      else
-      {
-        logger("[WEBSERVER] Json Error");
-        request->send(400, "text/plain", "JSON INVALID");
-      }
     }
     else
     {
@@ -264,53 +231,28 @@ void setupWebserver()
   server.addHandler(handlerAdopt);
 
   AsyncCallbackJsonWebHandler *handlermqtt = new AsyncCallbackJsonWebHandler("/save-mqtt", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    JsonObject &jsonObj = json.as<JsonObject>();
-    if (jsonObj.success())
-    {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
-      //SAVE CONFIG
-      saveMqtt(jsonObj).printTo(*response);
-
+      saveMqtt(json.as<JsonObject>()).printTo(*response);
       request->send(response);
-    }
-    else
-    {
-      logger("[WEBSERVER] Json Error");
-      request->send(400, "text/plain", "JSON INVALID");
-    }
   });
   server.addHandler(handlermqtt);
 
   AsyncCallbackJsonWebHandler *handlerRelay = new AsyncCallbackJsonWebHandler("/save-relay", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    JsonObject &jsonObj = json.as<JsonObject>();
-    if (jsonObj.success())
-    {
+   
         AsyncResponseStream *response = request->beginResponseStream("application/json");
-        saveRelay(jsonObj).printTo(*response);
+        saveRelay(json.as<JsonObject>()).printTo(*response);
         request->send(response);
       
-    }
-    else
-    {
-      logger("[WEBSERVER] Json Error");
-      request->send(400, "text/plain", "JSON INVALID");
-    }
+    
   });
   server.addHandler(handlerRelay);
 
   AsyncCallbackJsonWebHandler *handlerSensor = new AsyncCallbackJsonWebHandler("/save-sensor", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    JsonObject &jsonObj = json.as<JsonObject>();
-    if (jsonObj.success())
-    {
+   
         AsyncResponseStream *response = request->beginResponseStream("application/json");
-        storeSensor(jsonObj).printTo(*response);
+        storeSensor(json.as<JsonObject>()).printTo(*response);
         request->send(response);
-    }
-    else
-    {
-      logger("[WEBSERVER] Json Error");
-      request->send(400, "text/plain", "JSON INVALID");
-    }
+   
   });
   server.addHandler(handlerSensor);
   server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request) {

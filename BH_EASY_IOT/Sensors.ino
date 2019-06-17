@@ -67,17 +67,17 @@ void removeSensor(String _id)
   int index = 0;
   for (unsigned int i = 0; i < sns.size(); i++)
   {
-    JsonObject &sensorJson = sns.get<JsonVariant>(i);
-    if (sensorJson.get<String>("id").equals(_id))
+    JsonObject &sensorJson = sns.getMember.as<JsonVariant>(i);
+    if (sensorJson.getMember.as<String>()("id").equals(_id))
     {
       sensorFound = true;
       index = i;
-        JsonArray &functions = sensorJson.get<JsonVariant>("functions");
+        JsonArray &functions = sensorJson.getMember.as<JsonVariant>("functions");
     for (int i = 0; i < functions.size(); i++)
     {
-      JsonObject &f = functions.get<JsonVariant>(i);
-      String _id = normalize(f.get<String>("name"));
-      removeFromHaDiscovery(sensorJson.get<String>("class"), _id);
+      JsonObject &f = functions.getMember.as<JsonVariant>(i);
+      String _id = normalize(f.getMember.as<String>()("name"));
+      removeFromHaDiscovery(sensorJson.getMember.as<String>()("class"), _id);
     }
     }
   }
@@ -161,8 +161,8 @@ void loopSensors()
 }
 JsonObject &storeSensor(JsonObject &_sensor)
 {
-  removeSensor(_sensor.get<String>("id"));
-  _sensor.set("id", normalize(_sensor.get<String>("name")));
+  removeSensor(_sensor.getMember.as<String>()("id"));
+  _sensor.set("id", normalize(_sensor.getMember.as<String>()("name")));
   rebuildSensorMqttTopics(_sensor);
   rebuildDiscoverySensorMqttTopics(_sensor);
   String sn = "";
@@ -226,7 +226,7 @@ void loadStoredSensors()
         logger("[SENSORS] Apply stored file config...");
         for (int i = 0; i < storedSensors.size(); i++)
         {
-          sns.add(storedSensors.get<JsonVariant>(i));
+          sns.add(storedSensors.getMember.as<JsonVariant>(i));
         }
         applyJsonSensors();
       }
@@ -258,23 +258,23 @@ void applyJsonSensors()
 
   for (int i = 0; i < sns.size(); i++)
   {
-    JsonObject &sensorJson = sns.get<JsonVariant>(i);
-    int gpio = sensorJson.get<unsigned int>("gpio");
-    int type = sensorJson.get<unsigned int>("type");
-    String mqttStateTopic = sensorJson.get<String>("mqttStateTopic");
-     JsonArray &functions = sensorJson.get<JsonVariant>("functions");
+    JsonObject &sensorJson = sns.getMember.as<JsonVariant>(i);
+    int gpio = sensorJson.getMember.as<unsigned int>("gpio");
+    int type = sensorJson.getMember.as<unsigned int>("type");
+    String mqttStateTopic = sensorJson.getMember.as<String>()("mqttStateTopic");
+     JsonArray &functions = sensorJson.getMember.as<JsonVariant>("functions");
     switch (type)
     {
     case LDR_TYPE:
       _sensors.push_back({type, mqttStateTopic, NULL, NULL, NULL, A0, 2000ul, 0ul, 0ul, 0ul,"",""});
       break;
     case PIR_TYPE:{
-    JsonObject &f = functions.get<JsonVariant>(i);
+    JsonObject &f = functions.getMember.as<JsonVariant>(i);
     for (int i = 0; i < functions.size(); i++)
     {
-      JsonObject &f = functions.get<JsonVariant>(i);
-      String payloadOn = f.get<String>("payloadOn");
-      String payloadOff = f.get<String>("payloadOff");
+      JsonObject &f = functions.getMember.as<JsonVariant>(i);
+      String payloadOn = f.getMember.as<String>()("payloadOn");
+      String payloadOff = f.getMember.as<String>()("payloadOff");
       _sensors.push_back({type, mqttStateTopic, NULL, NULL, new DebounceEvent(gpio, callbackBinarySensor, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH), gpio, 0,0, 0, 0,payloadOn,payloadOff});
     }
     }
@@ -282,9 +282,9 @@ void applyJsonSensors()
     case REED_SWITCH_TYPE:
     for (int i = 0; i < functions.size(); i++)
     {
-      JsonObject &f = functions.get<JsonVariant>(i);
-      String payloadOn = f.get<String>("payloadOn");
-      String payloadOff = f.get<String>("payloadOff");
+      JsonObject &f = functions.getMember.as<JsonVariant>(i);
+      String payloadOn = f.getMember.as<String>()("payloadOn");
+      String payloadOff = f.getMember.as<String>()("payloadOff");
       int mode = BUTTON_PUSHBUTTON | BUTTON_SET_PULLUP ;
       if(gpio != 16){
         mode | BUTTON_DEFAULT_HIGH;

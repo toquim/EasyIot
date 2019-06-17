@@ -16,7 +16,7 @@ char *usernameMqtt = 0;
 char *passwordMqtt = 0;
 String getBaseTopic()
 {
-  String username = getConfigJson().get<String>("mqttUsername");
+  String username = getConfigJson().getMember.as<String>()("mqttUsername");
   if (username == "")
   {
     username = String(HARDWARE);
@@ -45,12 +45,12 @@ void onMqttConnect(bool sessionPresent)
 
 void rebuildSwitchMqttTopics(JsonObject &switchJson)
 {
-  String ipMqtt = getConfigJson().get<String>("mqttIpDns");
+  String ipMqtt = getConfigJson().getMember.as<String>()("mqttIpDns");
   if (ipMqtt == "")
     return;
-    String _id = switchJson.get<String>("id");
-    String type = switchJson.get<String>("type");
-    String _class = switchJson.get<String>("class");
+    String _id = switchJson.getMember.as<String>()("id");
+    String type = switchJson.getMember.as<String>()("type");
+    String _class = switchJson.getMember.as<String>()("class");
     switchJson.set("mqttCommandTopic", getBaseTopic() + "/" + _class + "/" + _id + "/set");
     switchJson.set("mqttStateTopic", getBaseTopic() + "/" + _class + "/" + _id + "/state");
     if (type.equals("cover"))
@@ -63,17 +63,17 @@ void rebuildSwitchMqttTopics(JsonObject &switchJson)
     }
 }
 void rebuildSensorMqttTopics(JsonObject &sensorJson) {
-String ipMqtt = getConfigJson().get<String>("mqttIpDns");
+String ipMqtt = getConfigJson().getMember.as<String>()("mqttIpDns");
   if (ipMqtt == "")
     return;  
-      String _id = sensorJson.get<String>("id");
-      String _class = sensorJson.get<String>("class");
+      String _id = sensorJson.getMember.as<String>()("id");
+      String _class = sensorJson.getMember.as<String>()("class");
       sensorJson.set("mqttStateTopic", getBaseTopic() + "/" + _class + "/" + _id + "/state");
 }
 
 void connectToMqtt()
 {
-  logger("[MQTT] Connecting to MQTT [" + getConfigJson().get<String>("mqttIpDns") + "]...");
+  logger("[MQTT] Connecting to MQTT [" + getConfigJson().getMember.as<String>()("mqttIpDns") + "]...");
   if (!getMqttState())
   {
     mqttClient.connect();
@@ -111,7 +111,7 @@ void setupMQTT()
   {
     mqttClient.disconnect();
   }
-  if (WiFi.status() != WL_CONNECTED || getConfigJson().get<String>("mqttIpDns").equals(""))
+  if (WiFi.status() != WL_CONNECTED || getConfigJson().getMember.as<String>()("mqttIpDns").equals(""))
     return;
 
   mqttClient.onConnect(onMqttConnect);
@@ -119,12 +119,12 @@ void setupMQTT()
   mqttClient.setClientId(clientId.c_str());
   mqttClient.onDisconnect(onMqttDisconnect);
   mqttClient.onMessage(onMqttMessage);
-  char *ipDnsMqtt = strdup(getConfigJson().get<String>("mqttIpDns").c_str());
+  char *ipDnsMqtt = strdup(getConfigJson().getMember.as<String>()("mqttIpDns").c_str());
 
-  if (!(getConfigJson().get<String>("mqttUsername").equals("") && getConfigJson().get<String>("mqttPassword").equals("")))
+  if (!(getConfigJson().getMember.as<String>()("mqttUsername").equals("") && getConfigJson().getMember.as<String>()("mqttPassword").equals("")))
   {
-    usernameMqtt = strdup(getConfigJson().get<String>("mqttUsername").c_str());
-    passwordMqtt = strdup(getConfigJson().get<String>("mqttPassword").c_str());
+    usernameMqtt = strdup(getConfigJson().getMember.as<String>()("mqttUsername").c_str());
+    passwordMqtt = strdup(getConfigJson().getMember.as<String>()("mqttPassword").c_str());
     mqttClient.setCredentials(usernameMqtt, passwordMqtt);
   }
   mqttClient.setCleanSession(true);

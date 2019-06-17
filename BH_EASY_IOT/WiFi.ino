@@ -5,13 +5,13 @@ void reloadWiFiConfig(){
        jw.disconnect(); 
        jw.setHostname(getHostname().c_str());
        jw.cleanNetworks();
-       jw.setSoftAP(getHostname().c_str(),getConfigJson().get<String>("apSecret").c_str());
-       if(getConfigJson().get<bool>("staticIp")){
-        jw.addNetwork(getConfigJson().get<String>("wifiSSID").c_str(), getConfigJson().get<String>("wifiSecret").c_str(),getConfigJson().get<String>("wifiIp").c_str(),getConfigJson().get<String>("wifiGw").c_str(),getConfigJson().get<String>("wifiMask").c_str(),getConfigJson().get<String>("wifiGw").c_str());
-        jw.addNetwork(getConfigJson().get<String>("wifiSSID2").c_str(), getConfigJson().get<String>("wifiSecret2").c_str(),getConfigJson().get<String>("wifiIp").c_str(),getConfigJson().get<String>("wifiGw").c_str(),getConfigJson().get<String>("wifiMask").c_str(),getConfigJson().get<String>("wifiGw").c_str());
+       jw.setSoftAP(getHostname().c_str(),getConfigJson().getMember("apSecret").as<String>().c_str());
+       if(getConfigJson().getMember("staticIp").as<bool>){
+        jw.addNetwork(getConfigJson().getMember<String>("wifiSSID").c_str(), getConfigJson().getMember("wifiSecret").as<String>().c_str(),getConfigJson().getMember.as<String>()("wifiIp").c_str(),getConfigJson().getMember.as<String>()("wifiGw").c_str(),getConfigJson().getMember("wifiMask").as<String>().c_str(),getConfigJson().getMember("wifiGw").as<String>().c_str());
+        jw.addNetwork(getConfigJson().getMember<String>("wifiSSID2").c_str(), getConfigJson().getMember("wifiSecret2").as<String>().c_str(),getConfigJson().getMember.as<String>()("wifiIp").c_str(),getConfigJson().getMember.as<String>()("wifiGw").c_str(),getConfigJson().getMember("wifiMask").as<String>().c_str(),getConfigJson().getMember("wifiGw").as<String>().c_str());
        }else{
-        jw.addNetwork(getConfigJson().get<String>("wifiSSID").c_str(), getConfigJson().get<String>("wifiSecret").c_str());
-        jw.addNetwork(getConfigJson().get<String>("wifiSSID2").c_str(), getConfigJson().get<String>("wifiSecret2").c_str());
+        jw.addNetwork(getConfigJson().as("wifiSSID").getMember<String>.c_str(), getConfigJson().getMember("wifiSecret").as<String>().c_str());
+        jw.addNetwork(getConfigJson().as("wifiSSID2").getMember<String>.c_str(), getConfigJson().getMember("wifiSecret2").as<String>().c_str());
       }
  }
  
@@ -55,7 +55,7 @@ void scanNewWifiNetworks(){
 void setupWiFi(){
   jw.setHostname(getHostname().c_str());
   jw.subscribe(infoCallback);
-  jw.setSoftAP(getApName().c_str(),getConfigJson().get<String>("apSecret").c_str());
+  jw.setSoftAP(getApName().c_str(),getConfigJson().getMember("apSecret").as<String>().c_str());
   jw.enableAP(false);
   jw.enableAPFallback(true);
   jw.enableSTA(true);
@@ -66,10 +66,10 @@ void setupWiFi(){
 void loopWiFi(){
   jw.loop();
 }
-JsonObject& wifiJSONStatus(){
-  DynamicJsonBuffer jsonBuffer(32);
-  JsonObject& wifi = jsonBuffer.createObject();
-  wifi.set("wifiSSID",getConfigJson().get<String>("wifiSSID"));
+JsonObject wifiJSONStatus(){
+ StaticJsonDocument<256> doc;
+ JsonObject wifi = doc.as<JsonObject>();
+  wifi.set("wifiSSID",getConfigJson().getMember("wifiSSID").as<String>());
   wifi.set("status",jw.connected());
   wifi.set("signal",WiFi.RSSI());
   wifi.set("wifiIp",WiFi.localIP().toString());  

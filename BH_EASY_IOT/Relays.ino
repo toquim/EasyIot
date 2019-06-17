@@ -13,8 +13,8 @@ void removeRelay(String _id)
   int index = 0;
   for (unsigned int i = 0; i < rls.size(); i++)
   {
-    JsonObject &relayJson = rls.get<JsonVariant>(i);
-    if (relayJson.get<String>("id").equals(_id))
+    JsonObject relayJson = rls.getMember.as<JsonVariant>(i);
+    if (relayJson.getMember.as<String>()("id").equals(_id))
     {
       relayFound = true;
       index = i;
@@ -28,20 +28,20 @@ void removeRelay(String _id)
   persistRelaysFile();
   applyJsonRelays();
 }
-JsonObject &saveRelay( JsonObject &_relay)
+JsonObject saveRelay( JsonObject _relay)
 {
-  removeRelay(_relay.get<String>("id"));
- _relay.set("id", normalize(_relay.get<String>("name")));
+  removeRelay(_relay.getMember.as<String>()("id"));
+ _relay.set("id", normalize(_relay.getMember.as<String>()("name")));
   String r = "";
   _relay.printTo(r);
   rls.add(getJsonObject(r.c_str()));
   persistRelaysFile();
   return _relay;
 }
-void openAction(JsonObject &switchJson)
+void openAction(JsonObject switchJson)
 {
-  int gpioOpenClose = switchJson.get<unsigned int>("gpioControlOpenClose");
-  int gpioStop = switchJson.get<unsigned int>("gpioControlStop");
+  int gpioOpenClose = switchJson.getMember.as<unsigned int>("gpioControlOpenClose");
+  int gpioStop = switchJson.getMember.as<unsigned int>("gpioControlStop");
   delay(10);
   _turnOff(getRelay(gpioStop));
   delay(50);
@@ -55,10 +55,10 @@ void openAction(JsonObject &switchJson)
   publishState(switchJson);
 }
 
-void closeAction(JsonObject &switchJson)
+void closeAction(JsonObject switchJson)
 {
-  int gpioOpenClose = switchJson.get<unsigned int>("gpioControlOpenClose");
-  int gpioStop = switchJson.get<unsigned int>("gpioControlStop");
+  int gpioOpenClose = switchJson.getMember.as<unsigned int>("gpioControlOpenClose");
+  int gpioStop = switchJson.getMember.as<unsigned int>("gpioControlStop");
   delay(10);
   _turnOff(getRelay(gpioStop));
   delay(50);
@@ -72,10 +72,10 @@ void closeAction(JsonObject &switchJson)
   publishState(switchJson);
 }
 
-void stopAction(JsonObject &switchJson)
+void stopAction(JsonObject switchJson)
 {
-  int gpioOpenClose = switchJson.get<unsigned int>("gpioControlOpenClose");
-  int gpioStop = switchJson.get<unsigned int>("gpioControlStop");
+  int gpioOpenClose = switchJson.getMember.as<unsigned int>("gpioControlOpenClose");
+  int gpioStop = switchJson.getMember.as<unsigned int>("gpioControlStop");
   logger("[SWITCH] STOP.");
   _turnOff(getRelay(gpioStop));
   switchJson.set("positionControlCover", 50);
@@ -85,38 +85,38 @@ void stopAction(JsonObject &switchJson)
   publishState(switchJson);
 }
 
-void turnOn(JsonObject &switchJson)
+void turnOn(JsonObject switchJson)
 {
-  JsonObject &relay = getRelay(switchJson.get<unsigned int>("gpioControl"));
+  JsonObject relay = getRelay(switchJson.getMember.as<unsigned int>("gpioControl"));
   bool state = _turnOn(relay);
   switchJson.set("stateControl", state);
   switchJson.set("statePayload", state ? "ON" : "OFF");
   publishState(switchJson);
 }
 
-void turnOff(JsonObject &switchJson)
+void turnOff(JsonObject switchJson)
 {
-  JsonObject &relay = getRelay(switchJson.get<unsigned int>("gpioControl"));
+  JsonObject relay = getRelay(switchJson.getMember.as<unsigned int>("gpioControl"));
   bool state = _turnOff(relay);
   switchJson.set("stateControl", state);
   switchJson.set("statePayload", state ? "ON" : "OFF");
   publishState(switchJson);
 }
-bool _turnOn(JsonObject &relay)
+bool _turnOn(JsonObject relay)
 {
-  int gpio = relay.get<unsigned int>("gpio");
-  bool inverted = relay.get<bool>("inverted");
-  String name = relay.get<String>("name");
+  int gpio = relay.getMember.as<unsigned int>("gpio");
+  bool inverted = relay.getMember.as<bool>("inverted");
+  String name = relay.getMember.as<String>()("name");
   digitalWrite(gpio, inverted ? LOW : HIGH);
   logger("[RELAY " + name + " GPIO: " + String(gpio) + "] ON");
   return inverted ? !digitalRead(gpio) : digitalRead(gpio);
 }
 
-bool _turnOff(JsonObject &relay)
+bool _turnOff(JsonObject relay)
 {
-  int gpio = relay.get<unsigned int>("gpio");
-  bool inverted = relay.get<bool>("inverted");
-  String name = relay.get<String>("name");
+  int gpio = relay.getMember.as<unsigned int>("gpio");
+  bool inverted = relay.getMember.as<bool>("inverted");
+  String name = relay.getMember.as<String>()("name");
   digitalWrite(gpio, inverted ? HIGH : LOW);
   logger("[RELAY " + name + " GPIO: " + String(gpio) + "] OFF");
   return inverted ? !digitalRead(gpio) : digitalRead(gpio);
@@ -150,12 +150,12 @@ bool turnOnRelayNormal(int gpio)
   turnOn(getRelay(gpio));
   return digitalRead(gpio);
 }
-JsonObject &getRelay(int gpio)
+JsonObject getRelay(int gpio)
 {
   for (unsigned int i = 0; i < rls.size(); i++)
   {
-    JsonObject &relayJson = rls.get<JsonVariant>(i);
-    if (relayJson.get<unsigned int>("gpio") == gpio)
+    JsonObject relayJson = rls.getMember.as<JsonVariant>(i);
+    if (relayJson.getMember.as<unsigned int>("gpio") == gpio)
     {
       return relayJson;
     }
@@ -163,7 +163,7 @@ JsonObject &getRelay(int gpio)
   return getJsonObject();
 }
 
-JsonArray &getStoredRelays()
+JsonArray getStoredRelays()
 {
   return rls;
 }
@@ -195,7 +195,7 @@ void loadStoredRelays()
         logger("[RELAY] Apply stored file config...");
         for (int i = 0; i < storedRelays.size(); i++)
         {
-          rls.add(storedRelays.get<JsonVariant>(i));
+          rls.add(storedRelays.getMember.as<JsonVariant>(i));
         }
         applyJsonRelays();
       }
@@ -225,8 +225,8 @@ void applyJsonRelays()
 {
   for (int i = 0; i < rls.size(); i++)
   {
-    JsonObject &relayJson = rls.get<JsonVariant>(i);
-    int gpio = relayJson.get<unsigned int>("gpio");
+    JsonObject relayJson = rls.getMember.as<JsonVariant>(i);
+    int gpio = relayJson.getMember.as<unsigned int>("gpio");
     pinMode(gpio, OUTPUT);
   }
 }
@@ -256,7 +256,7 @@ void persistRelaysFile()
 }
 void relayJson(String _id, long _gpio, bool _inverted, String _name)
 {
-  JsonObject &relayJson = getJsonObject();
+  JsonObject relayJson = getJsonObject();
   relayJson.set("id", _id);
   relayJson.set("gpio", _gpio);
   relayJson.set("inverted", _inverted);

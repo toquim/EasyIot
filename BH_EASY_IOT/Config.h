@@ -43,24 +43,33 @@ void requestWifiScan(){
   WIFI_SCAN = true;
 }
 
-DynamicJsonBuffer jsonBuffer(CONFIG_BUFFER_SIZE);
+DynamicJsonDocument jsonBuffer(CONFIG_BUFFER_SIZE);
 
-JsonArray &getJsonArray() {
-    return jsonBuffer.createArray();
+JsonArray getJsonArray() {
+    return jsonBuffer.to<JsonArray>();
 }
 
-JsonArray &getJsonArray(File file) {
-    return jsonBuffer.parseArray(file);
+JsonArray getJsonArray(File file) {
+  auto error = deserializeJson(jsonBuffer, file);
+if (error) {
+    Serial.print(F("deserializeJson() failed with code "));
+    Serial.println(error.c_str());
+}
+    return jsonBuffer.as<JsonArray>();
 }
 
-JsonObject &getJsonObject() {
-    return jsonBuffer.createObject();
+JsonObject getJsonObject() {
+    return jsonBuffer.to<JsonObject>();
 }
 
-JsonObject &getJsonObject(File file) {
-    return jsonBuffer.parseObject(file);
-}
 
-JsonObject &getJsonObject(const char *data) {
-    return jsonBuffer.parseObject(data);
+
+JsonObject getJsonObject(const char *data) {
+     auto error = deserializeJson(jsonBuffer, data);
+if (error) {
+    Serial.print(F("deserializeJson() failed with code "));
+    Serial.println(error.c_str());
+
+}
+    return jsonBuffer.as<JsonObject>();
 }
