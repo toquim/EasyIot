@@ -708,13 +708,13 @@ function buildSwitch(obj) {
         '                            </tr>' +
         '                            <tr id="primaryStateGpioRow_' + obj.id + '"">' +
         '                                <td><span class="label-device"><span' +
-        '                                    class="lang-pin-state-a">Pino Estado A</span></span></td>' +
+        '                                    class="lang-pin-state-a">Estado Pino A</span></span></td>' +
         '                                <td><select class="form-control select-device" id="primaryStateGpio_' + obj.id + '">' +
         '                                </select></td>' +
         '                            </tr>' +
         '                            <tr id="secondaryStateGpioRow_' + obj.id + '"">' +
         '                                <td><span class="label-device"><span' +
-        '                                    class="lang-pin-state-b">Pino Estado B</span></span></td>' +
+        '                                    class="lang-pin-state-b">Estado Pino B</span></span></td>' +
         '                                <td><select class="form-control select-device" id="secondaryStateGpio_' + obj.id + '">' +
         '                                </select></td>' +
         '                            </tr>' +
